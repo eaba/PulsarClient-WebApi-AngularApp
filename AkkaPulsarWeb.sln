@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "angularapp", "angularapp\angularapp.esproj", "{4577F4A8-5144-48E3-98A4-847ED10CD2A4}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "angularapp", "src\angularapp\angularapp.esproj", "{B58E6293-09EB-4957-AF0C-B611D23EDA12}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webapi", "webapi\webapi.csproj", "{F91F42DA-060B-4D4B-AC64-229B9B5AEA5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webapi", "src\webapi\webapi.csproj", "{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulsarClientHost", "PulsarClientHost\PulsarClientHost.csproj", "{4FF54A83-1F54-44E9-B12F-83AEEA69B668}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulsarClientHost", "src\PulsarClientHost\PulsarClientHost.csproj", "{B0A46D99-FC96-4038-B57C-656E6FE5715B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,20 +15,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4577F4A8-5144-48E3-98A4-847ED10CD2A4}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{F91F42DA-060B-4D4B-AC64-229B9B5AEA5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F91F42DA-060B-4D4B-AC64-229B9B5AEA5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F91F42DA-060B-4D4B-AC64-229B9B5AEA5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F91F42DA-060B-4D4B-AC64-229B9B5AEA5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4FF54A83-1F54-44E9-B12F-83AEEA69B668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4FF54A83-1F54-44E9-B12F-83AEEA69B668}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4FF54A83-1F54-44E9-B12F-83AEEA69B668}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4FF54A83-1F54-44E9-B12F-83AEEA69B668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B58E6293-09EB-4957-AF0C-B611D23EDA12}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0A46D99-FC96-4038-B57C-656E6FE5715B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0A46D99-FC96-4038-B57C-656E6FE5715B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0A46D99-FC96-4038-B57C-656E6FE5715B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0A46D99-FC96-4038-B57C-656E6FE5715B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PulsarClientHost": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
