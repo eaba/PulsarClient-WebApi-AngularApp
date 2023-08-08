@@ -57,7 +57,7 @@ services:
     networks:
       pulsar:
 
-  zk3.origin.pulsar.com:
+  zk3.origin.pulsr.com:
     container_name: zk1.origin.pulsar.com
     hostname: zk1.origin.pulsar.com
     image: apachepulsar/pulsar-all:3.0.0
