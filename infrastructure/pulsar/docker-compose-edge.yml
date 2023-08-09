@@ -18,7 +18,7 @@
 #
 #
 #
-# docker-compose -f docker-compose-origin.yml up
+# docker-compose -f docker-compose-edge.yml up
 
 version: '3.8'
 
@@ -38,17 +38,17 @@ services:
       zkServers: 192.168.0.131:2181
       configurationStore: 192.168.0.131:2181
     volumes:
+      - ./conf:/conf
+      - ./scripts:/scripts
       - ./scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh:z
     networks:
       pulsar:
 
   broker1:
     hostname: edge.pulsar.com
-    environment:
-        PULSAR_BROKER_CONF: /conf/broker.conf
     ports:
-      - "6651:6650"
-      - "8010:8080"
+      - "192.168.0.114:6651:6650"
+      - "192.168.0.114:8010:8080"
     container_name: broker1
     image: apachepulsar/pulsar-all:3.0.0
     restart: on-failure
@@ -58,6 +58,7 @@ services:
                bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar broker"
     environment:
+      PULSAR_BROKER_CONF: /conf/broker.conf
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
@@ -65,8 +66,6 @@ services:
       functionsWorkerEnabled: "false"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./broker1/data:/pulsar/data/broker/
-      - ./broker1/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     depends_on:
@@ -76,11 +75,9 @@ services:
 
   broker2:
     hostname: edge.pulsar.com
-    environment:
-        PULSAR_BROKER_CONF: /conf/broker.conf
     ports:
-      - "6652:6650"
-      - "8020:8080"
+      - "192.168.0.114:6652:6650"
+      - "192.168.0.114:8020:8080"
     container_name: broker2
     image: apachepulsar/pulsar-all:3.0.0
     restart: on-failure
@@ -90,6 +87,7 @@ services:
                bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar broker"
     environment:
+      PULSAR_BROKER_CONF: /conf/broker.conf
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
@@ -97,8 +95,6 @@ services:
       functionsWorkerEnabled: "false"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./broker2/data:/pulsar/data/broker/
-      - ./broker2/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     depends_on:
@@ -109,11 +105,9 @@ services:
 
   broker3:
     hostname: edge.pulsar.com
-    environment:
-        PULSAR_BROKER_CONF: /conf/broker.conf
     ports:
-      - "6653:6650"
-      - "8030:8080"
+      - "192.168.0.114:6653:6650"
+      - "192.168.0.114:8030:8080"
     container_name: broker3
     image: apachepulsar/pulsar-all:3.0.0
     restart: on-failure
@@ -123,6 +117,7 @@ services:
                bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar broker"
     environment:
+      PULSAR_BROKER_CONF: /conf/broker.conf
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
@@ -130,8 +125,6 @@ services:
       functionsWorkerEnabled: "false"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./broker3/data:/pulsar/data/broker/
-      - ./broker3/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     depends_on:
@@ -142,10 +135,8 @@ services:
 
   websocket1:
     hostname: edge.pulsar.com
-    environment:
-        PULSAR_WEBSOCKET_CONF: /conf/websocket.conf
     ports:
-      - "8040:8080"
+      - "192.168.0.114:8040:8080"
     container_name: websocket1
     restart: on-failure
     image: apachepulsar/pulsar-all:3.0.0
@@ -155,6 +146,7 @@ services:
                bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar websocket"
     environment:
+      PULSAR_WEBSOCKET_CONF: /conf/websocket.conf
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
@@ -171,7 +163,7 @@ services:
   sql1:
     hostname: sql.edge.pulsar.com
     ports:
-      - "8081:8081"
+      - "192.168.0.114:8081:8081"
     container_name: sql1
     image: apachepulsar/pulsar-all:3.0.0
     restart: on-failure
@@ -185,16 +177,15 @@ services:
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       pulsar.zookeeper-uri: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      pulsar.web-service-url: http://192.168.0.114:8080
+      pulsar.web-service-url: http://192.168.0.114:8010
       coordinator: "true"
     volumes:
       - ./scripts/apply-config-from-env-with-prefix.py:/pulsar/bin/apply-config-from-env-with-prefix.py:z
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
+      - ./trino:/pulsar/trino
     depends_on:      
       - pulsar-init
       - broker1
-    ports:
-      - "192.168.0.114:8081:8081"
     networks:
       pulsar:
 
