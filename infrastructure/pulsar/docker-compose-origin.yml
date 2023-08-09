@@ -16,6 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+#
+#
+# docker-compose -f docker-compose-origin.yml up
 
 version: '3.8'
 
@@ -29,7 +32,7 @@ services:
     container_name: zk1
     hostname: origin.pulsar.com
     ports:
-     - "2181:2181"
+     - "192.168.0.131:2181:2181"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -37,7 +40,7 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: origin.pulsar.com:2181,origin.pulsar.com:2182,origin.pulsar.com:2183
+      ZOOKEEPER_SERVERS: zk1,zk2,zk3
       ZK_ID: 1
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -52,7 +55,7 @@ services:
     container_name: zk2
     hostname: origin.pulsar.com
     ports:
-     - "2182:2181"
+     - "192.168.0.131:2182:2181"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -60,7 +63,7 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: origin.pulsar.com:2181,origin.pulsar.com:2182,origin.pulsar.com:2183
+      ZOOKEEPER_SERVERS: zk1,zk2,zk3
       ZK_ID: 2
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -75,7 +78,7 @@ services:
     container_name: zk3
     hostname: origin.pulsar.com
     ports:
-     - "2183:2181"
+     - "192.168.0.131:2183:2181"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -83,7 +86,7 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: origin.pulsar.com:2181,origin.pulsar.com:2182,origin.pulsar.com:2183
+      ZOOKEEPER_SERVERS: zk1,zk2,zk3
       ZK_ID: 3
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -93,30 +96,13 @@ services:
       - ./scripts:/scripts
     networks:
       pulsar:
-
-  pulsar-init:
-    container_name: pulsar-init
-    hostname: pulsar-init
-    image: apachepulsar/pulsar-all:3.0.0
-    command: bin/init-cluster.sh
-    environment:
-      clusterName: test
-      zkServers: origin.pulsar.com:2181
-      configurationStore: origin.pulsar.com:2181
-      pulsarNode: proxy1
-    volumes:
-      - ./scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh:z
-    depends_on:
-      - zk1
-      - zk2
-      - zk3
-    networks:
-      pulsar:
-
+  
   bk1:
-    hostname: bk1
+    hostname: origin.pulsar.com
+    ports:
+      - "192.168.0.131:3181:3181"
     container_name: bk1
-    image: apachepulsar/pulsar-all:latest
+    image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
                export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
@@ -126,23 +112,24 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1:2181,zk2:2181,zk3:2181
+      zkServers: zk1,zk2,zk3
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
-      - ./../../docker/pulsar/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
+      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
       - zk1
       - zk2
-      - zk3
-      - pulsar-init
+      - zk3      
     networks:
       pulsar:
 
   bk2:
-    hostname: bk2
+    hostname: origin.pulsar.com
+    ports:
+      - "192.168.0.131:3182:3181"
     container_name: bk2
-    image: apachepulsar/pulsar-all:latest
+    image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "export dbStorage_writeCacheMaxSizeMb="${dbStorage_writeCacheMaxSizeMb:-16}" && \
                export dbStorage_readAheadCacheMaxSizeMb="${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
@@ -152,22 +139,20 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1:2181,zk2:2181,zk3:2181
+      zkServers: zk1,zk2,zk3
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
-      - ./../../docker/pulsar/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
+      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
-      - zk1
-      - zk2
-      - zk3
-      - pulsar-init
       - bk1
     networks:
       pulsar:
 
   bk3:
-    hostname: bk3
+    hostname: origin.pulsar.com
+    ports:
+      - "192.168.0.131:3183:3181"
     container_name: bk3
     image: apachepulsar/pulsar-all:latest
     command: >
@@ -179,17 +164,12 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1:2181,zk2:2181,zk3:2181
+      zkServers: zk1,zk2,zk3
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
-      - ./../../docker/pulsar/scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
+      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
-      - zk1
-      - zk2
-      - zk3
-      - pulsar-init
       - bk1
-      - bk2
     networks:
       pulsar:
