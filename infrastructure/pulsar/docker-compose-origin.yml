@@ -44,8 +44,6 @@ services:
       ZK_ID: 1
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
-      - ./zk2/data:/pulsar/data/zookeeper/
-      - ./zk2/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     networks:
@@ -67,8 +65,6 @@ services:
       ZK_ID: 2
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
-      - ./zk2/data:/pulsar/data/zookeeper/
-      - ./zk2/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     networks:
@@ -90,8 +86,6 @@ services:
       ZK_ID: 3
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
-      - ./zk3/data:/pulsar/data/zookeeper/
-      - ./zk3/log/:/pulsar/logs
       - ./conf:/conf
       - ./scripts:/scripts
     networks:
