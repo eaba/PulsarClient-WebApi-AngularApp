@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,21 +17,28 @@
 # under the License.
 #
 
-set -x
-
-ZNODE="/initialized-$clusterName"
-
-bin/watch-znode.py -z $zkServers -p / -w
-
-bin/watch-znode.py -z $zkServers -p $ZNODE -e
-if [ $? != 0 ]; then
-    echo Initializing cluster
-    bin/apply-config-from-env.py conf/bookkeeper.conf &&
-        bin/pulsar initialize-cluster-metadata --cluster $clusterName --zookeeper $zkServers \
-                   --configuration-store $configurationStore --web-service-url http://192.168.0.131:8010/ \
-                   --broker-service-url pulsar://192.168.0.131:6651/ &&
-        bin/watch-znode.py -z $zkServers -p $ZNODE -c
-    echo Initialized
-else
-    echo Already Initialized
-fi
+{{- if and .Values.components.proxy .Values.istio.enabled }}
+{{- if eq .Values.ingress.proxy.type "IstioGateway" }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+  namespace: {{ template "pulsar.namespace" . }}
+spec:
+  rules:
+  - to:
+    - operation:
+        ports:
+        - "6650"
+        - "8080"
+        {{- if .Values.proxy.websocket }}
+        - "9090"
+        {{- end }}
+  action: ALLOW
+  selector:
+    matchLabels:
+      cloud.streamnative.io/app: pulsar
+      cloud.streamnative.io/component: proxy
+      cloud.streamnative.io/cluster: "{{ template "pulsar.fullname" . }}"
+{{- end }}
+{{- end }}

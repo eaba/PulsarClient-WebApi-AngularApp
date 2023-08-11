@@ -1,0 +1,5 @@
+choco install kind
+choco install kubernetes-helm
+choco install kubernetes-cli
+helm repo add streamnative https://charts.streamnative.io
+helm repo update

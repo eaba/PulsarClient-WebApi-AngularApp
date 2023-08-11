@@ -90,6 +90,24 @@ services:
       - ./scripts:/scripts
     networks:
       pulsar:
+      
+  pulsar-init:
+    container_name: pulsar-init
+    hostname: pulsar-init
+    image: apachepulsar/pulsar-all:3.0.0
+    command: bin/init-cluster.sh
+    environment:
+      clusterName: test
+      zkServers: zk1:2181,zk1:2182,zk1:2183
+      configurationStore: zk1:2181,zk1:2182,zk1:2183
+    volumes:
+      - ./scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh:z
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      pulsar:
   
   bk1:
     hostname: origin.pulsar.com
@@ -106,7 +124,7 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1,zk2,zk3
+      zkServers: zk1:2181,zk1:2182,zk1:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
@@ -133,7 +151,7 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1,zk2,zk3
+      zkServers: zk1:2181,zk1:2182,zk1:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
@@ -158,7 +176,7 @@ services:
                exec bin/pulsar bookie"
     environment:
       clusterName: test
-      zkServers: zk1,zk2,zk3
+      zkServers: zk1:2181,zk1:2182,zk1:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
