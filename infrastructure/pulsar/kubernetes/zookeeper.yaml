@@ -1,0 +1,192 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+#
+# kubectl apply -f zookeeper.yml
+# kubectl delete -f zookeeper.yml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: pulsar-zookeeper
+    namespace: pulsar
+    labels:
+      environment: dev
+      component: zookeeper
+data:
+    dataDir: /pulsar/data/zookeeper    
+    PULSAR_PREFIX_serverCnxnFactory: org.apache.zookeeper.server.NIOServerCnxnFactory
+    serverCnxnFactory: org.apache.zookeeper.server.NIOServerCnxnFactory
+    PULSAR_MEM: >
+      -Xms64m -Xmx128m
+    PULSAR_GC: >
+      -XX:+UseG1GC
+      -XX:MaxGCPauseMillis=10
+      -Dcom.sun.management.jmxremote
+      -Djute.maxbuffer=10485760
+      -XX:+ParallelRefProcEnabled
+      -XX:+UnlockExperimentalVMOptions
+      -XX:+DoEscapeAnalysis
+      -XX:+DisableExplicitGC
+      -XX:+ExitOnOutOfMemoryError
+      -XX:+PerfDisableSharedMem
+---
+## Define a disruption budget to ensure there are at least
+## 2 ZK servers running all the time
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pulsar-zookeeper
+  namespace: pulsar
+  labels:
+    component: zookeeper
+spec:
+ selector:
+   matchLabels:
+     component: zookeeper
+ minAvailable: 2
+---
+##
+## Define the ZooKeeper headless service
+##
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsar-zookeeper
+  namespace: pulsar
+  labels:        
+    app: pulsar-zookeeper
+    component: zookeeper
+spec:
+  ports:
+    - port: 8000
+      name: http
+    - port: 2181
+      name: client
+    - port: 2888
+      name: follower
+    - port: 3888
+      name: leader-election
+  clusterIP: None
+  publishNotReadyAddresses: false
+  selector:
+    app: pulsar-zookeeper
+    component: zookeeper
+---
+## Define a StatefulSet for ZK servers
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pulsar-zookeeper
+  namespace: pulsar
+  labels:
+    component: zookeeper
+spec:
+  serviceName: pulsar-zookeeper
+  replicas: 3
+  selector:
+    matchLabels:
+      component: zookeeper
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: pulsar-zookeeper
+        component: zookeeper
+      annotations:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - pulsar
+                    - key: "component"
+                      operator: In
+                      values:
+                        - zookeeper
+                topologyKey: "kubernetes.io/hostname"  
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: pulsar-zookeeper
+        image: apachepulsar/pulsar-all:3.0.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 0.1
+        command: ["sh", "-c"]
+        args:
+        - >
+          bin/apply-config-from-env.py conf/zookeeper.conf; 
+          bin/generate-zookeeper-config.sh conf/zookeeper.conf;
+          OPTS="${OPTS} -Dlog4j2.formatMsgNoLookups=true" exec bin/pulsar zookeeper;
+        ports:
+        # prometheus needs to access /metrics endpoint
+        - name: http
+          containerPort: 8000
+        - name: client
+          containerPort: 2181
+        - name: follower
+          containerPort: 2888
+        - name: leader-election
+          containerPort: 3888
+        env:
+         - name: ZOOKEEPER_SERVERS
+           value: pulsar-zookeeper-0,pulsar-zookeeper-1,pulsar-zookeeper-2
+        envFrom:
+        - configMapRef:
+            name: pulsar-zookeeper      
+        readinessProbe:
+          exec:
+            command:
+              - "bin/pulsar-zookeeper-ruok.sh"
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 10
+        livenessProbe:
+          exec:
+            command:
+              - "bin/pulsar-zookeeper-ruok.sh"
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 10
+        startupProbe:
+          exec:
+            command:
+              - "bin/pulsar-zookeeper-ruok.sh"
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 10
+        volumeMounts:
+        - name: pulsar-zookeeper-data
+          mountPath: /pulsar/data
+      volumes:          
+        - name: pulsar-zookeeper-data
+          emptyDir: {}

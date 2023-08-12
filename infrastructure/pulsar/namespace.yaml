@@ -17,12 +17,7 @@
 # under the License.
 #
 
-{{- if .Values.auth.oauth.enabled }}
 apiVersion: v1
-data:
-  broker_client_credential.json: {{ .Values.auth.oauth.brokerClientCredential | toJson | b64enc | quote }}
-kind: Secret
+kind: Namespace
 metadata:
-  name: "{{ template "pulsar.fullname" . }}-oauth-proxy-secret"
-  namespace: {{ template "pulsar.namespace" . }}
-{{- end }}
+  name: pulsar-akka
