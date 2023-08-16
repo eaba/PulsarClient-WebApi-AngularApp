@@ -1,0 +1,127 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+namespace: "pulsar"
+metadataPrefix: "/origin"
+## Set to true on install
+initialize: true
+## Set cluster name
+clusterName: origin
+volumes:
+  persistence: true
+  # configure the components to use local persistent volume
+  # the local provisioner should be installed prior to enable local persistent volume
+  local_storage: true 
+pulsar_metadata:
+  configurationStore: pulsar-cs-zookeeper
+  configurationStoreMetadataPrefix: "/configuration-store"
+
+## disable pulsar-manager
+components:
+  # zookeeper
+  zookeeper: true
+  # bookkeeper
+  bookkeeper: true
+  # bookkeeper - autorecovery
+  autorecovery: true
+  # broker
+  broker: false
+  # functions
+  functions: false
+  # proxy
+  proxy: false
+  # toolset
+  toolset: false
+  # pulsar manager
+  pulsar_manager: false
+  
+## Images
+##
+## Control what images to use for each component
+images:
+  zookeeper:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+    pullPolicy: IfNotPresent
+  bookie:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+    pullPolicy: IfNotPresent
+  autorecovery:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+    pullPolicy: IfNotPresent
+  broker:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+    pullPolicy: IfNotPresent
+  proxy:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+    pullPolicy: IfNotPresent
+  functions:
+    repository: apachepulsar/pulsar-all
+    # uses defaultPulsarImageTag when unspecified
+    tag: 3.0.0
+  pulsar_manager:
+    repository: apachepulsar/pulsar-manager
+    tag: v0.4.0
+    pullPolicy: IfNotPresent
+    hasCommand: false
+    
+kube-prometheus-stack:
+  enabled: false
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  alertmanager:
+    enabled: false
+    
+bookkeeper:
+  metadata:
+    ## Set the resources used for running `bin/bookkeeper shell initnewcluster`
+    ##
+    resources:
+       requests:
+         memory: 4Gi
+         cpu: 2
+  replicaCount: 1    
+  volumes:
+    # use a persistent volume or emptyDir
+    persistence: true
+    journal:
+      local_storage: true
+    ledgers:
+      local_storage: true  
+zookeeper:
+  replicaCount: 1
+  volumes:
+    # use a persistent volume or emptyDir
+    persistence: true
+    data:
+      name: data
+      size: 20Gi
+      local_storage: true
