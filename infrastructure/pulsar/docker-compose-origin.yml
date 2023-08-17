@@ -16,8 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#
-#
+# https://www.virtualizationhowto.com/2023/03/docker-compose-static-ip-configuration/
+# https://medium.com/@wandrys.sousa/assign-a-fixed-ip-address-to-a-container-in-docker-compose-2cc6c1a6151e
 # docker-compose -f docker-compose-origin.yml up
 
 version: '3.8'
@@ -25,14 +25,19 @@ version: '3.8'
 networks:
   pulsar:
     driver: bridge
+    #ipam:
+      #driver: default
+      #config:
+        #- subnet: 192.168.0.1/24
 
 services:
 
   zk1:
     container_name: zk1
-    hostname: origin.pulsar.com
+    hostname: zk1
     ports:
      - "192.168.0.131:2181:2181"
+     - "192.168.0.131:8000:8000"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -40,7 +45,20 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: zk1,zk2,zk3
+      PULSAR_MEM: >
+        -Xms64m -Xmx128m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -Dcom.sun.management.jmxremote
+        -Djute.maxbuffer=10485760
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:+DisableExplicitGC
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 1
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -48,12 +66,14 @@ services:
       - ./scripts:/scripts
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.131
 
   zk2:
     container_name: zk2
-    hostname: origin.pulsar.com
+    hostname: zk2
     ports:
      - "192.168.0.131:2182:2181"
+     - "192.168.0.131:8001:8000"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -61,7 +81,20 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: zk1,zk2,zk3
+      PULSAR_MEM: >
+        -Xms64m -Xmx128m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -Dcom.sun.management.jmxremote
+        -Djute.maxbuffer=10485760
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:+DisableExplicitGC
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 2
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -69,12 +102,14 @@ services:
       - ./scripts:/scripts
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.132
 
   zk3:
     container_name: zk3
-    hostname: origin.pulsar.com
+    hostname: zk3
     ports:
      - "192.168.0.131:2183:2181"
+     - "192.168.0.131:8002:8000"
     image: apachepulsar/pulsar-all:3.0.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
@@ -82,7 +117,20 @@ services:
                bin/generate-zookeeper-config.sh conf/zookeeper.conf && \
                exec bin/pulsar zookeeper"
     environment:
-      ZOOKEEPER_SERVERS: zk1,zk2,zk3
+      PULSAR_MEM: >
+        -Xms64m -Xmx128m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -Dcom.sun.management.jmxremote
+        -Djute.maxbuffer=10485760
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:+DisableExplicitGC
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 3
       PULSAR_ZK_CONF: /conf/zookeeper.conf
     volumes:
@@ -90,6 +138,7 @@ services:
       - ./scripts:/scripts
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.133
       
   pulsar-init:
     container_name: pulsar-init
@@ -98,8 +147,8 @@ services:
     command: bin/init-cluster.sh
     environment:
       clusterName: test
-      zkServers: zk1:2181,zk1:2182,zk1:2183
-      configurationStore: zk1:2181,zk1:2182,zk1:2183
+      zkServers: zk1:2181
+      configurationStore: zk1:2181
     volumes:
       - ./scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh:z
     depends_on:
@@ -110,9 +159,10 @@ services:
       pulsar:
   
   bk1:
-    hostname: origin.pulsar.com
+    hostname: bk1
     ports:
       - "192.168.0.131:3181:3181"
+      - "192.168.0.131:8003:8000"
     container_name: bk1
     image: apachepulsar/pulsar-all:3.0.0
     command: >
@@ -123,8 +173,32 @@ services:
                bin/watch-znode.py -z $$zkServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar bookie"
     environment:
+      PULSAR_MEM: >
+        -Xms128m
+        -Xmx256m
+        -XX:MaxDirectMemorySize=256m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:ParallelGCThreads=4
+        -XX:ConcGCThreads=4
+        -XX:G1NewSizePercent=50
+        -XX:+DisableExplicitGC
+        -XX:-ResizePLAB
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      # configure the memory settings based on jvm memory settings
+      dbStorage_writeCacheMaxSizeMb: "32"
+      dbStorage_readAheadCacheMaxSizeMb: "32"
+      dbStorage_rocksDB_writeBufferSizeMB: "8"
+      dbStorage_rocksDB_blockCacheSize: "8388608"
+      PULSAR_PREFIX_journalDirectories: "/pulsar/data/bookkeeper/journal"
+      extraServerComponents: "org.apache.bookkeeper.stream.server.StreamStorageLifecycleComponent"
       clusterName: test
-      zkServers: zk1:2181,zk1:2182,zk1:2183
+      zkServers: zk1:2181,zk2:2182,zk3:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
@@ -132,56 +206,119 @@ services:
     depends_on:
       - zk1
       - zk2
-      - zk3      
+      - zk3
+      - pulsar-init    
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.134
 
   bk2:
-    hostname: origin.pulsar.com
+    hostname: bk2
     ports:
       - "192.168.0.131:3182:3181"
+      - "192.168.0.131:8004:8000"
     container_name: bk2
     image: apachepulsar/pulsar-all:3.0.0
     command: >
-      bash -c "export dbStorage_writeCacheMaxSizeMb="${dbStorage_writeCacheMaxSizeMb:-16}" && \
-               export dbStorage_readAheadCacheMaxSizeMb="${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
+      bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
+               export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
                bin/apply-config-from-env.py conf/bookkeeper.conf && \
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
                bin/watch-znode.py -z $$zkServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar bookie"
     environment:
+      PULSAR_MEM: >
+        -Xms128m
+        -Xmx256m
+        -XX:MaxDirectMemorySize=256m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:ParallelGCThreads=4
+        -XX:ConcGCThreads=4
+        -XX:G1NewSizePercent=50
+        -XX:+DisableExplicitGC
+        -XX:-ResizePLAB
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      # configure the memory settings based on jvm memory settings
+      dbStorage_writeCacheMaxSizeMb: "32"
+      dbStorage_readAheadCacheMaxSizeMb: "32"
+      dbStorage_rocksDB_writeBufferSizeMB: "8"
+      dbStorage_rocksDB_blockCacheSize: "8388608"
+      PULSAR_PREFIX_journalDirectories: "/pulsar/data/bookkeeper/journal"
+      extraServerComponents: "org.apache.bookkeeper.stream.server.StreamStorageLifecycleComponent"
       clusterName: test
-      zkServers: zk1:2181,zk1:2182,zk1:2183
+      zkServers: zk1:2181,zk2:2182,zk3:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
-      - bk1
+      - zk1
+      - zk2
+      - zk3
+      - pulsar-init
+      - bk1      
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.135
 
   bk3:
-    hostname: origin.pulsar.com
+    hostname: bk3
     ports:
       - "192.168.0.131:3183:3181"
+      - "192.168.0.131:8005:8000"
     container_name: bk3
-    image: apachepulsar/pulsar-all:latest
+    image: apachepulsar/pulsar-all:3.0.0
     command: >
-      bash -c "export dbStorage_writeCacheMaxSizeMb="${dbStorage_writeCacheMaxSizeMb:-16}" && \
-               export dbStorage_readAheadCacheMaxSizeMb="${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
+      bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
+               export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
                bin/apply-config-from-env.py conf/bookkeeper.conf && \
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
                bin/watch-znode.py -z $$zkServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar bookie"
     environment:
+      PULSAR_MEM: >
+        -Xms128m
+        -Xmx256m
+        -XX:MaxDirectMemorySize=256m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:ParallelGCThreads=4
+        -XX:ConcGCThreads=4
+        -XX:G1NewSizePercent=50
+        -XX:+DisableExplicitGC
+        -XX:-ResizePLAB
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      # configure the memory settings based on jvm memory settings
+      dbStorage_writeCacheMaxSizeMb: "32"
+      dbStorage_readAheadCacheMaxSizeMb: "32"
+      dbStorage_rocksDB_writeBufferSizeMB: "8"
+      dbStorage_rocksDB_blockCacheSize: "8388608"
+      PULSAR_PREFIX_journalDirectories: "/pulsar/data/bookkeeper/journal"
+      extraServerComponents: "org.apache.bookkeeper.stream.server.StreamStorageLifecycleComponent"
       clusterName: test
-      zkServers: zk1:2181,zk1:2182,zk1:2183
+      zkServers: zk1:2181,zk2:2182,zk3:2183
       numAddWorkerThreads: 8
-      useHostNameAsBookieID: "true"
+      useHostNameAsBookieID: "true"  
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
+      - zk1
+      - zk2
+      - zk3
+      - pulsar-init
       - bk1
+      - bk2      
     networks:
       pulsar:
+        #ipv4_address: 192.168.0.137
