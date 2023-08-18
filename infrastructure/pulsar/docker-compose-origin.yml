@@ -67,6 +67,11 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.131
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 256M
 
   zk2:
     container_name: zk2
@@ -103,6 +108,11 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.132
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 256M
 
   zk3:
     container_name: zk3
@@ -139,6 +149,11 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.133
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 256M
       
   pulsar-init:
     container_name: pulsar-init
@@ -201,6 +216,13 @@ services:
       zkServers: zk1:2181,zk2:2182,zk3:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.131:8003/api/v1/bookie/is_ready"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+      # start_interval: 5s  # services.bk1.healthcheck Additional property start_interval is not allowed
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
@@ -211,6 +233,11 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.134
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M    
 
   bk2:
     hostname: bk2
@@ -266,6 +293,11 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.135
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M   
 
   bk3:
     hostname: bk3
@@ -322,3 +354,8 @@ services:
     networks:
       pulsar:
         #ipv4_address: 192.168.0.137
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M    

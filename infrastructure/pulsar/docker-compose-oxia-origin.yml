@@ -1,0 +1,107 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# https://www.virtualizationhowto.com/2023/03/docker-compose-static-ip-configuration/
+# https://medium.com/@wandrys.sousa/assign-a-fixed-ip-address-to-a-container-in-docker-compose-2cc6c1a6151e
+# docker-compose -f docker-compose-oxia-origin.yml up
+
+version: '3.8'
+
+networks:
+  pulsar-oxia:
+    driver: bridge
+    #ipam:
+      #driver: default
+      #config:
+        #- subnet: 192.168.0.1/24
+
+services:
+
+  ox1:
+    container_name: ox1
+    hostname: ox1
+    ports:
+     - "192.168.0.131:6649:6649"
+     - "192.168.0.131:6648:6648"
+     - "192.168.0.131:8080:8080"
+    image: streamnative/oxia:main
+    command: >
+      bash -c "oxia server --log-json --data-dir=/data/db --wal-dir=/data/wal --db-cache-size-mb=512 --profile && \
+               oxia coordinator --log-json --metadata=configmap --profile"
+    environment:
+      oxia_cluster: test           
+    volumes:
+      - /data
+    networks:
+      pulsar-oxia:
+        #ipv4_address: 192.168.0.131
+      
+  
+  bk1:
+    hostname: bk1
+    ports:
+      - "192.168.0.131:3181:3181"
+      - "192.168.0.131:8003:8000"
+    container_name: bk1
+    image: apachepulsar/pulsar-all:3.0.0
+    command: >
+      bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
+               export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
+               bin/apply-config-from-env.py conf/bookkeeper.conf && \
+               bin/apply-config-from-env.py conf/pulsar_env.sh && \
+               # bin/watch-znode.py -z $$zkServers -p /initialized-$$clusterName -w && \
+               exec bin/pulsar bookie"
+    environment:
+      PULSAR_MEM: >
+        -Xms128m
+        -Xmx256m
+        -XX:MaxDirectMemorySize=256m
+      PULSAR_GC: >
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=10
+        -XX:+ParallelRefProcEnabled
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DoEscapeAnalysis
+        -XX:ParallelGCThreads=4
+        -XX:ConcGCThreads=4
+        -XX:G1NewSizePercent=50
+        -XX:+DisableExplicitGC
+        -XX:-ResizePLAB
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+PerfDisableSharedMem
+      # configure the memory settings based on jvm memory settings
+      dbStorage_writeCacheMaxSizeMb: "32"
+      dbStorage_readAheadCacheMaxSizeMb: "32"
+      dbStorage_rocksDB_writeBufferSizeMB: "8"
+      dbStorage_rocksDB_blockCacheSize: "8388608"
+      PULSAR_PREFIX_journalDirectories: "/pulsar/data/bookkeeper/journal"
+      extraServerComponents: "org.apache.bookkeeper.stream.server.StreamStorageLifecycleComponent"
+      clusterName: test
+      configurationStore: ox1:6649
+      numAddWorkerThreads: 8
+      useHostNameAsBookieID: "true"
+    volumes:
+      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
+    depends_on:
+      - ox1
+      #- pulsar-init    
+    networks:
+      pulsar-oxia:
+        #ipv4_address: 192.168.0.134
+
+ 
