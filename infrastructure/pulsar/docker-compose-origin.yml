@@ -30,7 +30,7 @@ networks:
       #config:
         #- subnet: 192.168.0.1/24
 
-services:
+services: 
 
   zk1:
     container_name: zk1
@@ -61,6 +61,7 @@ services:
       ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 1
       PULSAR_ZK_CONF: /conf/zookeeper.conf
+      clusterName: test
     volumes:
       - ./conf:/conf
       - ./scripts:/scripts
@@ -102,6 +103,7 @@ services:
       ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 2
       PULSAR_ZK_CONF: /conf/zookeeper.conf
+      clusterName: test
     volumes:
       - ./conf:/conf
       - ./scripts:/scripts
@@ -143,6 +145,7 @@ services:
       ZOOKEEPER_SERVERS: zk1:2181,zk2:2181,zk3:2181
       ZK_ID: 3
       PULSAR_ZK_CONF: /conf/zookeeper.conf
+      clusterName: test
     volumes:
       - ./conf:/conf
       - ./scripts:/scripts
