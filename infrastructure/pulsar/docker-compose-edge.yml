@@ -38,7 +38,7 @@ services:
       zkServers: 192.168.0.131:2181
       configurationStore: 192.168.0.131:2181
     volumes:
-      - ./conf:/conf
+      - ./conf1:/conf
       - ./scripts:/scripts
       - ./scripts/init-cluster.sh/:/pulsar/bin/init-cluster.sh:z
     networks:
@@ -62,11 +62,13 @@ services:
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      webSocketServiceEnabled: "false"
-      functionsWorkerEnabled: "false"
+      webSocketServiceEnabled: "true"
+      functionsWorkerEnabled: "true"
+      PULSAR_PREFIX_systemTopicEnabled: "true"
+      PULSAR_PREFIX_topicLevelPoliciesEnabled: "true"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
+      - ./conf1:/conf
       - ./scripts:/scripts
     depends_on:
       - pulsar-init
@@ -91,11 +93,13 @@ services:
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      webSocketServiceEnabled: "false"
-      functionsWorkerEnabled: "false"
+      webSocketServiceEnabled: "true"
+      functionsWorkerEnabled: "true"
+      PULSAR_PREFIX_systemTopicEnabled: "true"
+      PULSAR_PREFIX_topicLevelPoliciesEnabled: "true"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
+      - ./conf1:/conf
       - ./scripts:/scripts
     depends_on:
       - pulsar-init
@@ -121,107 +125,18 @@ services:
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStore: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      webSocketServiceEnabled: "false"
-      functionsWorkerEnabled: "false"
+      webSocketServiceEnabled: "true"
+      functionsWorkerEnabled: "true"
+      PULSAR_PREFIX_systemTopicEnabled: "true"
+      PULSAR_PREFIX_topicLevelPoliciesEnabled: "true"
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
+      - ./conf1:/conf
       - ./scripts:/scripts
     depends_on:
       - pulsar-init
       - broker1
       - broker2
-    networks:
-      pulsar:
-   
-  proxy1:
-    hostname: proxy1
-    container_name: proxy1
-    restart: on-failure
-    image: apachepulsar/pulsar-all:3.1.0
-    command: >
-      bash -c "bin/apply-config-from-env.py conf/proxy.conf && \
-               bin/apply-config-from-env.py conf/pulsar_env.sh && \
-               # bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
-               exec bin/pulsar proxy"
-    environment:
-      clusterName: test
-      zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      webSocketServiceEnabled: "true"
-      functionWorkerWebServiceURL: http://192.168.0.114:6750
-    volumes:
-      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
-      - ./scripts:/scripts
-    ports:
-      - "192.168.0.114:6655:6650"
-      - "192.168.0.114:8088:8080"
-    depends_on:
-      - pulsar-init
-      - broker1
-    networks:
-      pulsar: 
-      
-  fnc1:
-    hostname: fnc1
-    container_name: fnc1
-    image: apachepulsar/pulsar-all:3.1.0
-    restart: on-failure
-    ports:
-      - "192.168.0.114:6750:6750"
-    command: >
-      bash -c "bin/apply-config-from-env.py conf/client.conf && \
-               bin/gen-yml-from-env.py conf/functions_worker.yml && \
-               bin/apply-config-from-env.py conf/pulsar_env.sh && \
-               # bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
-               exec bin/pulsar functions-worker"
-    environment:
-      clusterName: test
-      zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      # Requires PF_ prefix for some reason in the code
-      PF_pulsarFunctionsCluster: test
-      PF_workerId: fnc1
-      # This setting does not appear to accept more than one host
-      PF_configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      PF_pulsarServiceUrl: pulsar://192.168.0.114:6655
-      PF_pulsarWebServiceUrl: http://192.168.0.114:8088
-    volumes:
-      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
-      - ./scripts:/scripts
-    depends_on:
-      - pulsar-init
-      - broker1
-      - proxy1
-    networks:
-      pulsar:
-      
-  websocket1:
-    hostname: websocket1
-    ports:
-      - "192.168.0.114:8040:8080"
-    container_name: websocket1
-    restart: on-failure
-    image: apachepulsar/pulsar-all:3.1.0
-    command: >
-      bash -c "bin/apply-config-from-env.py conf/websocket.conf && \
-               bin/apply-config-from-env.py conf/pulsar_env.sh && \
-               # bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
-               exec bin/pulsar websocket"
-    environment:
-      PULSAR_WEBSOCKET_CONF: /conf/websocket.conf
-      clusterName: test
-      zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-      configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
-    volumes:
-      - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./conf:/conf
-      - ./scripts:/scripts
-    depends_on:
-      - pulsar-init
-      - broker1
-      - proxy1
     networks:
       pulsar:
   
@@ -237,7 +152,7 @@ services:
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
                # bin/watch-znode.py -z $$zookeeperServers -p /initialized-$$clusterName -w && \
                exec bin/pulsar sql-worker run"
-    environment:
+    environment:    
       clusterName: test
       zookeeperServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
       configurationStoreServers: 192.168.0.131:2181,192.168.0.131:2182,192.168.0.131:2183
@@ -249,11 +164,10 @@ services:
     volumes:
       - ./scripts/apply-config-from-env-with-prefix.py:/pulsar/bin/apply-config-from-env-with-prefix.py:z
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
-      - ./trino:/pulsar/trino
+      - ./trino/conf/catalog/pulsar.properties:/pulsar/trino/conf/catalog/pulsar.properties
     depends_on:
       - pulsar-init
       - broker1
-      - proxy1
     networks:
       pulsar:
 
@@ -268,13 +182,15 @@ services:
       - broker1
     volumes:
       - "./data/:/data:z"
+      # - "./manager/application.properties:/pulsar-manager/pulsar-manager/application.properties"
     environment:
-      REDIRECT_HOST: "http://127.0.0.1"
-      REDIRECT_PORT: "9527"
+      # REDIRECT_HOST: "http://127.0.0.1"
+      # REDIRECT_PORT: "9527"
       DRIVER_CLASS_NAME: "org.postgresql.Driver"
       URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
       USERNAME: "pulsar"
       PASSWORD: "pulsar"
       LOG_LEVEL: "DEBUG"
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
     networks:
       pulsar:
