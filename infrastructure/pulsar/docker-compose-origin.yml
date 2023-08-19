@@ -38,7 +38,7 @@ services:
     ports:
      - "192.168.0.131:2181:2181"
      - "192.168.0.131:8000:8000"
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
@@ -80,7 +80,7 @@ services:
     ports:
      - "192.168.0.131:2182:2181"
      - "192.168.0.131:8001:8000"
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
@@ -122,7 +122,7 @@ services:
     ports:
      - "192.168.0.131:2183:2181"
      - "192.168.0.131:8002:8000"
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "bin/apply-config-from-env.py conf/zookeeper.conf && \
                bin/apply-config-from-env.py conf/pulsar_env.sh && \
@@ -161,7 +161,7 @@ services:
   pulsar-init:
     container_name: pulsar-init
     hostname: pulsar-init
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: bin/init-cluster.sh
     environment:
       clusterName: test
@@ -182,7 +182,7 @@ services:
       - "192.168.0.131:3181:3181"
       - "192.168.0.131:8003:8000"
     container_name: bk1
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
                export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
@@ -219,13 +219,13 @@ services:
       zkServers: zk1:2181,zk2:2182,zk3:2183
       numAddWorkerThreads: 8
       useHostNameAsBookieID: "true"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://192.168.0.131:8003/api/v1/bookie/is_ready"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 3
-      start_period: 30s
-      # start_interval: 5s  # services.bk1.healthcheck Additional property start_interval is not allowed
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://192.168.0.131:8003/api/v1/bookie/is_ready"]
+    #   interval: 1m30s
+    #   timeout: 30s
+    #   retries: 3
+    #   start_period: 30s
+    #   # start_interval: 5s  # services.bk1.healthcheck Additional property start_interval is not allowed
     volumes:
       - ./scripts/apply-config-from-env.py:/pulsar/bin/apply-config-from-env.py:z
     depends_on:
@@ -239,8 +239,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
-          memory: 512M    
+          cpus: '1'
+          memory: 2G  # 512M WARN  org.apache.bookkeeper.replication.ReplicationWorker - BKNotEnoughBookiesException while replicating the fragment
+                        # 2023-08-19 15:53:03 org.apache.bookkeeper.client.BKException$BKNotEnoughBookiesException: Not enough non-faulty bookies available  
 
   bk2:
     hostname: bk2
@@ -248,7 +249,7 @@ services:
       - "192.168.0.131:3182:3181"
       - "192.168.0.131:8004:8000"
     container_name: bk2
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
                export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
@@ -299,8 +300,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
-          memory: 512M   
+          cpus: '1'
+          memory: 2G   # 512M WARN  org.apache.bookkeeper.replication.ReplicationWorker - BKNotEnoughBookiesException while replicating the fragment
+                        # 2023-08-19 15:53:03 org.apache.bookkeeper.client.BKException$BKNotEnoughBookiesException: Not enough non-faulty bookies available  
 
   bk3:
     hostname: bk3
@@ -308,7 +310,7 @@ services:
       - "192.168.0.131:3183:3181"
       - "192.168.0.131:8005:8000"
     container_name: bk3
-    image: apachepulsar/pulsar-all:3.0.0
+    image: apachepulsar/pulsar-all:3.1.0
     command: >
       bash -c "export dbStorage_writeCacheMaxSizeMb="$${dbStorage_writeCacheMaxSizeMb:-16}" && \
                export dbStorage_readAheadCacheMaxSizeMb="$${dbStorage_readAheadCacheMaxSizeMb:-16}" && \
@@ -360,5 +362,6 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
-          memory: 512M    
+          cpus: '1'
+          memory: 2G    # 512M WARN  org.apache.bookkeeper.replication.ReplicationWorker - BKNotEnoughBookiesException while replicating the fragment
+                        # 2023-08-19 15:53:03 org.apache.bookkeeper.client.BKException$BKNotEnoughBookiesException: Not enough non-faulty bookies available  
