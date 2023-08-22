@@ -170,27 +170,30 @@ services:
       - broker1
     networks:
       pulsar:
-
+  
+  # WINDOWS CMD: 
+  # https://linuxhint.com/install-use-curl-windows/
+  # curl http://192.168.0.114:7750/pulsar-manager/csrf-token
+  # curl -H "X-XSRF-TOKEN: 62117b4c-9bee-46d7-a26a-1c855e236d15" -H "Cookie: XSRF-TOKEN=62117b4c-9bee-46d7-a26a-1c855e236d15;" -H "Content-Type: application/json" -X PUT http://192.168.0.114:7750/pulsar-manager/users/superuser -d "{\"name\": \"admin\", \"password\": \"apachepulsar\", \"description\": \"test\", \"email\": \"username@test.org\"}"
+  # service-url: http://
   manager:
     hostname: manager
     container_name: manager
     image: apachepulsar/pulsar-manager:v0.4.0
     ports:
       - "192.168.0.114:9527:9527"
-      - "192.168.0.114:7750:7750"
+      - "192.168.0.114:7750:7750"      
     depends_on:
       - broker1
     volumes:
       - "./data/:/data:z"
-      # - "./manager/application.properties:/pulsar-manager/pulsar-manager/application.properties"
     environment:
-      # REDIRECT_HOST: "http://127.0.0.1"
-      # REDIRECT_PORT: "9527"
+      REDIRECT_HOST: "http://192.168.0.114"
+      REDIRECT_PORT: "9527"
       DRIVER_CLASS_NAME: "org.postgresql.Driver"
       URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
       USERNAME: "pulsar"
       PASSWORD: "pulsar"
       LOG_LEVEL: "DEBUG"
-      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
     networks:
       pulsar:
