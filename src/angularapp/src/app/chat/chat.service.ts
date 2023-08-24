@@ -17,7 +17,8 @@ export class AppChatService {
     private connection!: HubConnection;
 
     start(name: string) {
-        this.connection = new HubConnectionBuilder().withUrl(`chathub?name=${name}`).withAutomaticReconnect().build();
+      this.connection = new HubConnectionBuilder().withUrl(`https://localhost:32776/chathub?name=${name}`, {
+        headers: { 'Access-Control-Allow-Origin': '*' }}).withAutomaticReconnect().build();
         this.connection.on("Connected", (connected: ConnectedModel) => this.$connected.next(connected));
         this.connection.on("Disconnected", (disconnected: DisconnectedModel) => this.$disconnected.next(disconnected));
         this.connection.on("Loaded", (loaded: LoadedModel) => this.$loaded.next(loaded));

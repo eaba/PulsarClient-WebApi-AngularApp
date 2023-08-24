@@ -9,10 +9,23 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy",
+            builder =>
+            {
+                builder.WithOrigins("https://localhost:4200")
+                       .AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .SetIsOriginAllowed((host) => true)
+                       .AllowCredentials();
+            }));
+
 builder.Services.AddSignalR(o =>
 {
     o.EnableDetailedErrors = true;
+    o.EnableDetailedErrors = true;
 });
+
+builder.Services.AddSingleton<IChatRepository, ChatRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,6 +38,8 @@ app.UseWebSockets();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
+app.UseCors("CorsPolicy");
+//app.UseCors("AllowAngularOrigins");
 app.MapControllers();
 
 app.MapHub<ChatHub>("chathub");

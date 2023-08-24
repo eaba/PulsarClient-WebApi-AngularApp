@@ -6,11 +6,7 @@ public class ChatHub : Hub
 {
     private readonly IChatRepository _chatRepository;
 
-    public ChatHub()
-    {
-        _chatRepository = new ChatRepository();
-    } 
-
+    public ChatHub(IChatRepository chatRepository) => _chatRepository = chatRepository;
 
     public override async Task OnConnectedAsync()
     {
@@ -37,7 +33,18 @@ public class ChatHub : Hub
 
         await base.OnDisconnectedAsync(exception);
     }
+    public async Task Send(Send send)
+    {
+        if (string.IsNullOrWhiteSpace(send.Message)) return;
 
+        var clients = send.All ? Clients.All : Clients.Clients(Context.ConnectionId, send.ConnectionId);
+
+        var source = _chatRepository.Get(Context.ConnectionId);
+
+        var target = _chatRepository.Get(send.ConnectionId);
+
+        await clients.SendAsync("Sent", new Sent(source, target, send.Message, send.Private));
+    }
     public async Task Message(string send)
     {
         await Clients.All.SendAsync("Sent", send);

@@ -1,10 +1,14 @@
 const PROXY_CONFIG = [
   {
     context: [
-      "/api",
+      "/chathub"
     ],
-    target: "https://localhost:7136",
-    secure: false
+    target: "http://localhost:32777/",
+    secure: false,
+    ws: true,
+    changeOrigin: false,
+    logLevel: "debug"
+
   }
 ]
 
