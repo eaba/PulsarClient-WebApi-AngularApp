@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
+using System.Xml.Linq;
+using webapi.Models;
 
 namespace webapi;
 
@@ -27,7 +29,7 @@ public class ChatHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception exception)
     {
-        var client = _chatRepository.Remove(Context.ConnectionId);
+        var client = _chatRepository.Removed(Context.ConnectionId);
 
         await Clients.All.SendAsync("Disconnected", new Disconnected(client));
 
@@ -44,6 +46,14 @@ public class ChatHub : Hub
         var target = _chatRepository.Get(send.ConnectionId);
 
         await clients.SendAsync("Sent", new Sent(source, target, send.Message, send.Private));
+    }
+    public async Task Login(Login login)
+    {
+        var lo = new Logined(Context.ConnectionId, login.Name, login.Username, new DateTime(), new List<string>() { Context.ConnectionId });
+
+        var logined =_chatRepository.Add(lo);
+
+        await Clients.All.SendAsync("Logined", logined);
     }
     public async Task Message(string send)
     {

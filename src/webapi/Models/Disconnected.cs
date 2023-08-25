@@ -1,3 +1,5 @@
+using webapi.Models;
+
 namespace webapi;
 
-public sealed record Disconnected(Client Client);
+public sealed record Disconnected(Logined log);

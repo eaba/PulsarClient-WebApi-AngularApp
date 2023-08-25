@@ -1,11 +1,13 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
-import { ConnectedModel } from "./connected.model";
-import { DisconnectedModel } from "./disconnected.model";
-import { LoadedModel } from "./loaded.model";
-import { SendModel } from "./send.model";
-import { SentModel } from "./sent.model";
+import { ConnectedModel } from "./../model/connected.model";
+import { DisconnectedModel } from "./../model/disconnected.model";
+import { LoadedModel } from "./../model/loaded.model";
+import { SendModel } from "./../model/send.model";
+import { LoginModel } from "./../model/login.model";
+import { LoginedModel } from "./../model/logined.model";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
+import { SentModel } from "./../model/sent.model";
 
 @Injectable({ providedIn: "root" })
 export class AppChatService {
@@ -13,6 +15,7 @@ export class AppChatService {
     $disconnected = new Subject<DisconnectedModel>();
     $loaded = new Subject<LoadedModel>();
     $sent = new Subject<SentModel>();
+    $logined = new Subject<LoginedModel>();
 
     private connection!: HubConnection;
 
@@ -23,8 +26,10 @@ export class AppChatService {
         this.connection.on("Disconnected", (disconnected: DisconnectedModel) => this.$disconnected.next(disconnected));
         this.connection.on("Loaded", (loaded: LoadedModel) => this.$loaded.next(loaded));
         this.connection.on("Sent", (sent: SentModel) => this.$sent.next(sent));
+        this.connection.on("Logined", (logined: LoginedModel) => this.$logined.next(logined));
         this.connection.start();
     }
 
     send = (send: SendModel) => this.connection.invoke("Send", send);
+    login = (login: LoginModel) => this.connection.invoke("Login", login);
 }

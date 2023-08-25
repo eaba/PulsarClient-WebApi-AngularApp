@@ -1,3 +1,97 @@
+<div class="container-fluid center-block" style="font-family:century gothic; width:780px; margin:1% auto;">
+  <div *ngIf="!logined" class="login center-block">
+    <h2 class="title">Login to Chat</h2>
+    <form id="login-form" (ngSubmit)="joinChat()">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text"
+               class="form-control"
+               id="text"
+               name="name"
+               placeholder="Name"
+               [(ngModel)]="Name" />
+        <label for="username">Username</label>
+        <input type="text"
+               class="form-control"
+               id="text"
+               name="username"
+               placeholder="Username"
+               [(ngModel)]="username" />
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+  <div *ngIf="logined" class="row center-block">
+    <h3 class="text-center">Realtime Chat Application</h3>
+    <div id="messages">
+      <div class="col-sm-3">
+        <h4 class="text-center">Username(s)</h4>
+        <div *ngFor="let logined of logineds" class="mb">
+          <mat-card>
+            <mat-card-subtitle>
+              <span>{{logined.name}} - {{logined.username}} (ConnectId: {{logined.connectionId}})</span>
+            </mat-card-subtitle>
+          </mat-card>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <h4 class="text-center">Public</h4>
+        <div *ngFor="let chat of chats" class="mb">
+          <mat-card>
+            <mat-card-subtitle>
+              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <p>{{chat.message}}</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <h4 class="text-center">Private</h4>
+        <div *ngFor="let chat of chats" class="mb">
+          <mat-card>
+            <mat-card-subtitle>
+              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <p>{{chat.message}}</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <h4 class="text-center">Pulsar Log</h4>
+        <div *ngFor="let chat of chats" class="mb">
+          <mat-card>
+            <mat-card-subtitle>
+              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <p>{{chat.message}}</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+    <div>
+      <form id="message" [formGroup]="form" (ngSubmit)="onChatSubmit(form.value)">
+        <mat-form-field appearance="outline" class="fw">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="fw">
+          <mat-label>Enter Chat</mat-label>
+          <input matInput formControlName="message">
+          <button type="submit" matSuffix mat-icon-button aria-label="Submit">
+            <mat-icon>send</mat-icon>
+          </button>
+        </mat-form-field>
+      </form>
+    </div>
+  </div>  
+</div>
+
 <form [formGroup]="form">
     <div class="uk-margin-small">
         <label>User</label>
