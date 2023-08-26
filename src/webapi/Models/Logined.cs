@@ -1,4 +1,4 @@
 ﻿namespace webapi.Models
 {
-    public sealed record Logined(string ConnectionId, string Name, string Username, DateTime date, IList<string> ConnectionIds);
+    public sealed record Logined(string ConnectionId, Login Login, IList<string> ConnectionIds);
 }

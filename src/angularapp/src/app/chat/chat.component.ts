@@ -11,10 +11,14 @@ import { ClientModel } from "./../model/client.model";
 import { ConnectedModel } from "./../model/connected.model";
 import { DisconnectedModel } from "./../model/disconnected.model";
 import { LoadedModel } from "./../model/loaded.model";
-import { SendModel } from "./../model/send.model";
-import { SentModel } from "./../model/sent.model";
+//import { SendModel } from "./../model/send.model";
 import { LoginModel } from "./../model/login.model";
 import { LoginedModel } from "./../model/logined.model";
+import { PostModel } from "../model/post.model";
+import { MessageModel } from "../model/message.model";
+import { PulsarModel } from "../model/pulsar.model";
+import { PostedModel } from "../model/posted.model";
+import { MessagedModel } from "../model/messaged.model";
 
 @Component({
     selector: "app-chat",
@@ -32,20 +36,24 @@ import { LoginedModel } from "./../model/logined.model";
     ]
 })
 export class AppChatComponent implements OnDestroy {
-    form = inject(FormBuilder).group({ connectionId: undefined, message: undefined, private: false });
+    form = inject(FormBuilder).group({ name: undefined, username: undefined });
+    post_form = inject(FormBuilder).group({ username: undefined, message: undefined });
+    message_form = inject(FormBuilder).group({ username: undefined, message: undefined });
+    posts = new Array<PostModel>();
+    messages = new Array<MessageModel>();
+    pulsar = new Array<string>();
     clients = new Array<ClientModel>();
     logineds = new Array<LoginedModel>();
     logined = new LoginedModel();
-    username!: string;
-    name!: string;
-    lgin = new LoginModel();
-    constructor(private readonly appChatService: AppChatService) {
-      this.appChatService.start(this.name);
+  constructor(private readonly appChatService: AppChatService) {
+      this.appChatService.start();
       this.appChatService.$connected?.subscribe((connected) => this.connected(connected));
       this.appChatService.$disconnected?.subscribe((disconnected) => this.disconnected(disconnected));
       this.appChatService.$loaded?.subscribe((loaded) => this.loaded(loaded));
-      this.appChatService.$sent?.subscribe((sent) => this.sent(sent));
       this.appChatService.$logined?.subscribe((logined) => this.Logined(logined));
+      this.appChatService.$pulsar?.subscribe((pulsar) => this.Pulsar(pulsar));
+      this.appChatService.$posted?.subscribe((posted) => this.Posted(posted));
+      this.appChatService.$messaged?.subscribe((messaged) => this.Messaged(messaged));
     }
 
     ngOnDestroy(): void {
@@ -54,30 +62,35 @@ export class AppChatComponent implements OnDestroy {
         this.appChatService.$loaded?.unsubscribe();
         this.appChatService.$sent?.unsubscribe();
         this.appChatService.$logined?.unsubscribe();
+        this.appChatService.$pulsar?.unsubscribe();
+        this.appChatService.$posted?.unsubscribe();
+        this.appChatService.$messaged?.unsubscribe();
     }
     start() {
-      this.appChatService.start(this.name);
+      this.appChatService.start();
       this.appChatService.$connected?.subscribe((connected) => this.connected(connected));
       this.appChatService.$disconnected?.subscribe((disconnected) => this.disconnected(disconnected));
       this.appChatService.$loaded?.subscribe((loaded) => this.loaded(loaded));
-      this.appChatService.$sent?.subscribe((sent) => this.sent(sent));
     }
-    joinChat() {
     
+    login = () => this.appChatService.login(this.form.value as LoginModel);
+    //message = () => this.appChatService.message(this.message_form.value as MessageModel);
+    ///send = () => this.appChatService.send(this.form.value as SendModel).then(() => this.form.controls.message.reset());
+    onPostSubmit() {
+      const post = this.post_form.value as PostModel;
+      post.timestamp = new Date().toString();
+      this.appChatService.post(post).then(() => this.post_form.controls.message.reset());
     }
-    send = () => this.appChatService.send(this.form.value as SendModel).then(() => this.form.controls.message.reset());
-
-    private message(message: string, css: string) {
-        const messages = document.getElementById("messages") as HTMLElement;
-        messages.innerHTML += `<li class="${css}">${message}</li>`;
-        messages.scrollTop = messages.scrollHeight;
+    onMessageSubmit() {
+      const msg = this.message_form.value as MessageModel;
+      msg.timestamp = new Date().toString();
+      this.appChatService.message(msg).then(() => this.message_form.controls.message.reset());
     }
-
     private htmlName = (name: string) => `<span class="name">${name}</span>`;
 
     private connected(connected: ConnectedModel) {
-        this.clients.push(connected.client);
-        this.message(`${this.htmlName(connected.client.name)} connected.`, "alert-success");
+        this.logineds.push(connected.logined);
+        //this.message(`${this.htmlName(connected.client.name)} connected.`, "alert-success");
     }
 
     private disconnected(disconnected: DisconnectedModel) {
@@ -87,23 +100,17 @@ export class AppChatComponent implements OnDestroy {
 
     private loaded = (loaded: LoadedModel) => this.clients = loaded.clients;
 
-    private sent(sent: SentModel) {
-        const targetName = sent.target ? `to ${this.htmlName(sent.target.name)}` : "";
-        const css = sent.target?.name === this.name ? "alert-primary" : "alert-default";
-        const message = `${this.htmlName(sent.source.name)} ${targetName}: ${sent.message}`;
-        this.message(message, css);
-    }
     private Logined(log: LoginedModel) {
       this.logineds.push(log);
       this.logined = log;
     }
-    login() {
-      this.lgin.name = this.name;
-      this.lgin.username = this.username;
-      if (this.lgin.name.length >= 0 && this.lgin.username.length >= 0) {
-        this.appChatService.login(this.lgin);
-        this.lgin.name = '';
-        this.lgin.username = '';
-      }      
+    private Posted(post: PostedModel) {
+      this.posts.push(post.message);
+    }
+    private Messaged(msg: MessagedModel) {
+      this.messages.push(msg.message);
+    }
+    private Pulsar(pulsar: PulsarModel) {
+      this.pulsar.push(pulsar.message);
     }
 }

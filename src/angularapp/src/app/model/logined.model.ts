@@ -1,7 +1,8 @@
+import { LoginModel } from "./login.model";
+
 export class LoginedModel {
+  login!: LoginModel;
   connectionId!: string;
-  name!: string;
-  username!: string;
   connectionIds!: Array<string>;
 }
 //chat/login/name

@@ -1,24 +1,20 @@
 <div class="container-fluid center-block" style="font-family:century gothic; width:780px; margin:1% auto;">
   <div *ngIf="!logined" class="login center-block">
     <h2 class="title">Login to Chat</h2>
-    <form id="login-form" (ngSubmit)="joinChat()">
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text"
-               class="form-control"
-               id="text"
-               name="name"
-               placeholder="Name"
-               [(ngModel)]="Name" />
-        <label for="username">Username</label>
-        <input type="text"
-               class="form-control"
-               id="text"
-               name="username"
-               placeholder="Username"
-               [(ngModel)]="username" />
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
+    <form [formGroup]="form" id="login-form">
+      <mat-form-field appearance="outline" class="fw">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="fw">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="fw">
+        <button type="submit" matSuffix mat-icon-button aria-label="Submit" onclick="login()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-form-field>
     </form>
   </div>
   <div *ngIf="logined" class="row center-block">
@@ -29,84 +25,77 @@
         <div *ngFor="let logined of logineds" class="mb">
           <mat-card>
             <mat-card-subtitle>
-              <span>{{logined.name}} - {{logined.username}} (ConnectId: {{logined.connectionId}})</span>
+              <span>{{logined.login.name}} - {{logined.login.username}} (ConnectId: {{logined.connectionId}})</span>
             </mat-card-subtitle>
           </mat-card>
         </div>
       </div>
       <div class="col-sm-3">
-        <h4 class="text-center">Public</h4>
-        <div *ngFor="let chat of chats" class="mb">
+        <h4 class="text-center">Post</h4>
+        <div *ngFor="let post of posts" class="mb">
           <mat-card>
             <mat-card-subtitle>
-              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
+              <span>{{post.username}} (Sent: {{post.timestamp | date:'long'}})</span>
             </mat-card-subtitle>
             <mat-card-content>
-              <p>{{chat.message}}</p>
+              <p>{{post.message}}</p>
             </mat-card-content>
           </mat-card>
         </div>
+        <div>
+          <form id="post" [formGroup]="post_form">
+            <mat-form-field appearance="outline" class="fw">
+              <mat-label>Username</mat-label>
+              <input matInput formControlName="username">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="fw">
+              <mat-label>Enter Chat</mat-label>
+              <input matInput formControlName="message">
+              <button type="submit" matSuffix mat-icon-button aria-label="Submit" onclick="onPostSubmit(form.value)">
+                <mat-icon>send</mat-icon>
+              </button>
+            </mat-form-field>
+          </form>
+        </div>
       </div>
       <div class="col-sm-3">
-        <h4 class="text-center">Private</h4>
-        <div *ngFor="let chat of chats" class="mb">
+        <h4 class="text-center">Message Private</h4>
+        <div *ngFor="let msg of messages" class="mb">
           <mat-card>
             <mat-card-subtitle>
-              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
+              <span>{{msg.username}} (Sent: {{msg.timestamp | date:'long'}})</span>
             </mat-card-subtitle>
             <mat-card-content>
-              <p>{{chat.message}}</p>
+              <p>{{msg.message}}</p>
             </mat-card-content>
           </mat-card>
+        </div>
+        <div>
+          <form id="message" [formGroup]="message_form">
+            <mat-form-field appearance="outline" class="fw">
+              <mat-label>Username</mat-label>
+              <input matInput formControlName="username">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="fw">
+              <mat-label>Enter Chat</mat-label>
+              <input matInput formControlName="message">
+              <button type="submit" matSuffix mat-icon-button aria-label="Submit" onclick="onMessageSubmit()">
+                <mat-icon>send</mat-icon>
+              </button>
+            </mat-form-field>
+          </form>
         </div>
       </div>
       <div class="col-sm-3">
         <h4 class="text-center">Pulsar Log</h4>
-        <div *ngFor="let chat of chats" class="mb">
+        <div *ngFor="let msg of pulsar" class="mb">
           <mat-card>
-            <mat-card-subtitle>
-              <span>{{chat.username}} (Sent: {{chat.timestamp | date:'long'}})</span>
-            </mat-card-subtitle>
             <mat-card-content>
-              <p>{{chat.message}}</p>
+              <p>{{msg}}</p>
             </mat-card-content>
           </mat-card>
         </div>
       </div>
     </div>
-    <div>
-      <form id="message" [formGroup]="form" (ngSubmit)="onChatSubmit(form.value)">
-        <mat-form-field appearance="outline" class="fw">
-          <mat-label>Username</mat-label>
-          <input matInput formControlName="username">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="fw">
-          <mat-label>Enter Chat</mat-label>
-          <input matInput formControlName="message">
-          <button type="submit" matSuffix mat-icon-button aria-label="Submit">
-            <mat-icon>send</mat-icon>
-          </button>
-        </mat-form-field>
-      </form>
-    </div>
   </div>  
 </div>
-
-<form [formGroup]="form">
-    <div class="uk-margin-small">
-        <label>User</label>
-        <select class="uk-select" formControlName="connectionId">
-            <option selected></option>
-            <option *ngFor="let client of clients" [value]="client.connectionId">{{ client.name }}</option>
-        </select>
-    </div>
-    <div class="uk-margin-small">
-        <label><input class="uk-checkbox" type="checkbox" formControlName="private"> Private</label>
-    </div>
-    <div class="uk-margin-small">
-        <label>Message</label>
-        <textarea autofocus="autofocus" class="uk-textarea" rows="3" formControlName="message" (keydown.enter)="send()"></textarea>
-    </div>
-</form>
-
-<ul class="uk-list uk-list-striped" id="messages"></ul>

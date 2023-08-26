@@ -14,7 +14,7 @@ public sealed class ChatRepository : IChatRepository
     {
         foreach (var l in _logineds)
         {
-            if (l.Username == log.Username)
+            if (l.Login.Username == log.Login.Username)
             {
                 l.ConnectionIds.Add(log.ConnectionId);
                 return l;
@@ -29,7 +29,7 @@ public sealed class ChatRepository : IChatRepository
     }
     public Client Get(string connectionId) => _clients.SingleOrDefault(client => client.ConnectionId == connectionId);
 
-    public Logined GetUsername(string username) => _logineds.SingleOrDefault(logined => logined.Username == username);
+    public Logined GetUsername(string username) => _logineds.SingleOrDefault(logined => logined.Login.Username == username);
     public Logined GetConnectionId(string connectionId) => _logineds.SingleOrDefault(logined => logined.ConnectionId == connectionId);
 
     public IEnumerable<Client> Get() => _clients.OrderBy(client => client.Name);

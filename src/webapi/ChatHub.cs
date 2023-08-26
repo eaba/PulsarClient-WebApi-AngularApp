@@ -25,6 +25,8 @@ public class ChatHub : Hub
         await Clients.Client(Context.ConnectionId).SendAsync("Loaded", new Loaded(clients));
 
         await base.OnConnectedAsync();
+
+        //pulsar System.Text.Json
     }
 
     public override async Task OnDisconnectedAsync(Exception exception)
@@ -49,14 +51,18 @@ public class ChatHub : Hub
     }
     public async Task Login(Login login)
     {
-        var lo = new Logined(Context.ConnectionId, login.Name, login.Username, new DateTime(), new List<string>() { Context.ConnectionId });
+        var lo = new Logined(Context.ConnectionId, login, new List<string>() { Context.ConnectionId });
 
         var logined =_chatRepository.Add(lo);
 
         await Clients.All.SendAsync("Logined", logined);
     }
-    public async Task Message(string send)
+    public async Task Post(Post msg)
     {
-        await Clients.All.SendAsync("Sent", send);
+        await Clients.All.SendAsync("Posted", msg);
+    }
+    public async Task Message(Message msg)
+    {
+        await Clients.All.SendAsync("Messaged", msg);
     }
 }

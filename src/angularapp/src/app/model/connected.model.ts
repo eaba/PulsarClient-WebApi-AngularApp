@@ -1,5 +1,6 @@
-import { ClientModel } from "./client.model";
+
+import { LoginedModel } from "./logined.model";
 
 export class ConnectedModel {
-    client!: ClientModel;
+  logined!: LoginedModel;
 }
