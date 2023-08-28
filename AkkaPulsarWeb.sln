@@ -7,7 +7,7 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "angularapp", "src\angularap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webapi", "src\webapi\webapi.csproj", "{7CD407E3-7655-4CAD-8BD5-1B517E2167AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiTest", "src\WebApiTest\WebApiTest.csproj", "{064FCA79-EFD4-4F1C-9465-90CE1BA277C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiTest", "src\WebApiTest\WebApiTest.csproj", "{064FCA79-EFD4-4F1C-9465-90CE1BA277C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
